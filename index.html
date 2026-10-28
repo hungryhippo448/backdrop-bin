@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Backdrop Bin</title>
+<meta name="description" content="Free retro, bold, nature and campus backgrounds. Pick a size and download a PNG for your phone, desktop or poster.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23d6ab64'/%3E%3Cpath d='M16 20 L-10 60 L4 60Z M16 20 L28 60 L42 60Z M16 20 L-20 0 L-20 14Z M16 20 L52 0 L52 14Z M16 20 L8 -10 L22 -10Z' fill='%23a06c26'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a wallpaper bin. Short masthead, filter chips, a dense grid of 4:5 swatches; a viewer panel previews the chosen size and exports a PNG. */
+:root{
+  --bg:#f0eee9; --surface:#ffffff; --fg:#191714; --muted:#615c55; --line:#dcd7cf; --chip:#e6e2db;
+  --accent:#c2541c; --accent-ink:#ffffff; --scrim:rgba(20,17,14,.82);
+  --display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141210; --surface:#1e1b18; --fg:#f2efe9; --muted:#a39d94; --line:#2f2b27; --chip:#272320;
+  --accent:#f08a4b; --accent-ink:#1b0d04; --scrim:rgba(8,7,6,.88); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141210; --surface:#1e1b18; --fg:#f2efe9; --muted:#a39d94; --line:#2f2b27; --chip:#272320;
+  --accent:#f08a4b; --accent-ink:#1b0d04; --scrim:rgba(8,7,6,.88); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+img{max-width:100%}
+.wrap{max-width:1240px;margin:0 auto;padding-block:32px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+header{display:grid;gap:10px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,8vw,92px);line-height:.9;letter-spacing:-.03em;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{margin:0;max-width:58ch;color:var(--muted);font-size:16px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 13px var(--body);border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:7px 13px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.shuffle{font-size:13px;padding:7px 13px;border-radius:999px}
+.count{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:22px 16px}
+.card{all:unset;display:grid;gap:8px;cursor:pointer;min-width:0}
+.thumb{aspect-ratio:4/5;max-width:100%;width:100%;border-radius:4px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 20px -10px rgba(0,0,0,.35);transition:transform .18s ease}
+.thumb img{display:block;width:100%;height:100%}
+.card:hover .thumb{transform:translateY(-3px) rotate(-.4deg)}
+.meta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-width:0}
+.name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;flex:none}
+.dots{display:flex;gap:4px}
+.dots i{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.chip:focus-visible,.card:focus-visible,.btn:focus-visible,.sw:focus-visible,.size:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+
+.viewer{position:fixed;inset:0;z-index:20;background:var(--scrim);display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.panel{background:var(--surface);border-radius:8px;width:min(980px,100%);max-height:100%;overflow:auto;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;padding:20px}
+.stage{display:grid;place-items:center;background:var(--chip);border-radius:6px;padding:16px;min-height:300px}
+.stage img{display:block;max-height:min(68vh,640px);width:auto;max-width:100%;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.side{display:grid;align-content:start;gap:16px;min-width:0}
+.side h2{font-family:var(--display);font-weight:800;font-size:38px;line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.side p{margin:0;color:var(--muted)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.size{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:5px;padding:8px 10px;display:grid;gap:1px}
+.size b{font-size:14px}
+.size small{font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.size[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.swatches{display:grid;gap:6px}
+.sw{all:unset;display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;cursor:pointer;padding:4px 8px 4px 4px;border-radius:5px;border:1px solid var(--line)}
+.sw:hover{background:var(--chip)}
+.sw i{width:26px;height:26px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.sw b{font:500 13px var(--mono)}
+.sw small{font-size:12px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:600 14px var(--body);border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:9px 14px;border-radius:5px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.status{font-size:13px;color:var(--muted);min-height:1.5em}
+@media (max-width:760px){.panel{grid-template-columns:1fr;padding:14px}.side h2{font-size:30px}.stage img{max-height:52vh}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Free backgrounds · PNG downloads</div>
+    <h1>Backdrop <em>Bin</em></h1>
+    <p class="lede">A pile of retro, bold, outdoorsy and nerdy backgrounds. Tap one, pick phone, desktop, tablet, square or poster size, and download a sharp PNG.</p>
+  </header>
+  <div class="bar">
+    <div class="chips" id="chips" role="group" aria-label="Filter backgrounds"></div>
+    <div class="row"><span class="count" id="count"></span><button class="btn shuffle" id="shuffle" type="button">Surprise me</button></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <footer>Every background is drawn in your browser, so downloads come out crisp at full size. Free to use for anything.</footer>
+</div>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="vName">
+  <div class="panel">
+    <div class="stage"><img id="vImg" alt=""></div>
+    <div class="side">
+      <div class="row" style="justify-content:space-between"><span class="label" id="vCat"></span><button class="btn" id="vClose" type="button">Close</button></div>
+      <h2 id="vName"></h2>
+      <p id="vNote"></p>
+      <div class="label">Size</div>
+      <div class="sizes" id="vSizes"></div>
+      <div class="row">
+        <button class="btn primary" id="vDl" type="button">Download PNG</button>
+        <button class="btn" id="vPrev" type="button" aria-label="Previous background">←</button>
+        <button class="btn" id="vNext" type="button" aria-label="Next background">→</button>
+      </div>
+      <div class="status" id="vStatus" aria-live="polite"></div>
+      <div class="label">Colors · tap to copy</div>
+      <div class="swatches" id="vSw"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let W = 800, H = 1000;
+const SIZES = [
+  {id:"phone",   name:"Phone",   w:1179, h:2556},
+  {id:"desktop", name:"Desktop", w:2560, h:1440},
+  {id:"tablet",  name:"Tablet",  w:2048, h:2732},
+  {id:"square",  name:"Square",  w:2048, h:2048},
+  {id:"poster",  name:"Poster 24×30 in", w:2400, h:3000},
+  {id:"banner",  name:"Banner",  w:3000, h:1000},
+];
+
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const S = () => Math.min(W,H)/800;            // scale for strokes and dot sizes
+const area = () => (W*H)/(800*1000);          // scale for scatter counts
+const grain = (a=.14) => `<filter id="gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${(.85/S()).toFixed(3)}" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 ${a} 0"/></filter>`;
+const grainRect = () => `<rect width="${W}" height="${H}" filter="url(#gr)"/>`;
+const vignette = (op=.4) => `<radialGradient id="vg" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${op}"/></radialGradient>`;
+const svg = (defs, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs}</defs>${body}</svg>`;
+const full = fill => `<rect width="${W}" height="${H}" fill="${fill}"/>`;
+
+function rays(cx, cy, n, color, twist=0){
+  let s="", step=Math.PI*2/n, R=(W+H)*2;
+  for(let i=0;i<n;i+=2){const a1=i*step+twist,a2=a1+step;
+    s+=`<polygon points="${cx},${cy} ${cx+R*Math.cos(a1)},${cy+R*Math.sin(a1)} ${cx+R*Math.cos(a2)},${cy+R*Math.sin(a2)}" fill="${color}"/>`}
+  return s;
+}
+function wave(yf, ampf, waves, phase, color){
+  const y=yf*H, amp=ampf*H; let d=`M0 ${H} L0 ${y}`;
+  for(let x=0;x<=W+10;x+=W/120){d+=` L${x.toFixed(1)} ${(y+amp*Math.sin((x/W)*Math.PI*2*waves+phase)).toFixed(1)}`}
+  return `<path d="${d} L${W} ${H} Z" fill="${color}"/>`;
+}
+function blobs(seed, cols, n, blur){
+  const r=rng(seed); let s="";
+  for(let i=0;i<n;i++) s+=`<circle cx="${r()*W}" cy="${r()*H}" r="${(.25+r()*.35)*Math.max(W,H)}" fill="${cols[i%cols.length]}" opacity="${.55+r()*.45}"/>`;
+  return `<filter id="bb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${blur*Math.max(W,H)}"/></filter>`+"|"+`<g filter="url(#bb)">${s}</g>`;
+}
+
+const BGS = [
+  /* ---------- Retro ---------- */
+  {name:"Retro Sunburst", cat:"Retro", note:"Caramel rays on tan with a soft sun disk and a dark frame, like a 1950s matchbook.",
+   colors:[["#1a160f","Frame"],["#a06c26","Caramel"],["#d6ab64","Tan"],["#e2bd7c","Sun"]],
+   svg(){const cx=W/2,cy=H*.6,f=Math.min(W,H)*.0275;return svg(grain(.16)+vignette(.22),
+     `${full("#d6ab64")}${rays(cx,cy,40,"#a06c26",-.04)}<circle cx="${cx}" cy="${cy}" r="${Math.min(W,H)*.09}" fill="#dcb46e"/>
+      <rect width="${W}" height="${H}" fill="url(#vg)"/>${grainRect()}
+      <rect x="${f/2}" y="${f/2}" width="${W-f}" height="${H-f}" fill="none" stroke="#1a160f" stroke-width="${f}"/>
+      <rect x="${f*1.4}" y="${f*1.4}" width="${W-f*2.8}" height="${H-f*2.8}" fill="none" stroke="#e6c88f" stroke-width="${f*.14}" opacity=".7"/>`)}},
+  {name:"Tomato Sunburst", cat:"Retro", note:"Tomato-red rays fanning down from the top edge on warm paper.",
+   colors:[["#c8361d","Tomato"],["#f4e3c3","Paper"]],
+   svg(){return svg(grain(.12),`${full("#f4e3c3")}${rays(W/2,-H*.08,48,"#c8361d")}${grainRect()}`)}},
+  {name:"Halftone Fade", cat:"Retro", note:"Print-shop halftone dots growing from nothing to solid mustard.",
+   colors:[["#f1e6cf","Paper"],["#d99a1e","Mustard"]],
+   svg(){let d="",s=26*S();for(let y=0,row=0;y<=H+s;y+=s,row++){const t=y/H;for(let x=(row%2)*s/2;x<=W+s;x+=s){const r=t*t*s*.72;if(r>.6)d+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"/>`}}
+     return svg(grain(.1),`${full("#f1e6cf")}<g fill="#d99a1e">${d}</g>${grainRect()}`)}},
+  {name:"Seventies Rainbow", cat:"Retro", note:"Chunky 1970s arcs in walnut, rust, orange and gold.",
+   colors:[["#f2e2c4","Sand"],["#5a3420","Walnut"],["#a5461f","Rust"],["#e07b2a","Orange"],["#e9b33f","Gold"]],
+   svg(){const c=["#5a3420","#a5461f","#e07b2a","#e9b33f","#f2e2c4"],R=Math.max(W*.95,H*.76);let s="";c.forEach((col,i)=>{s+=`<circle cx="${W/2}" cy="${H*1.12}" r="${R*(1-i*.158)}" fill="${col}"/>`});
+     return svg(grain(.12),`${full("#f2e2c4")}${s}${grainRect()}`)}},
+  {name:"Vaporwave Grid", cat:"Retro", note:"A striped neon sun sinking behind an endless magenta grid.",
+   colors:[["#1a0b33","Night"],["#ff3d9a","Magenta"],["#ffb347","Sunset"],["#29e0ff","Cyan"]],
+   svg(){const hz=H*.62,cx=W/2,R=Math.min(W,H)*.32;let g="";
+     for(let i=-30;i<=30;i++)g+=`<line x1="${cx+i*W*.02}" y1="${hz}" x2="${cx+i*W*.2}" y2="${H}"/>`;
+     for(let k=1;k<14;k++){const y=hz+(H-hz)*Math.pow(k/13,2.2);g+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`}
+     let cut="";for(let k=0;k<7;k++){const y=hz-R*.62+k*R*.14;cut+=`<rect x="0" y="${y}" width="${W}" height="${R*.03*(k+1)}" fill="#000"/>`}
+     return svg(`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a0b33"/><stop offset="1" stop-color="#5b1e6e"/></linearGradient>
+       <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff3d9a"/></linearGradient>
+       <mask id="m"><rect width="${W}" height="${H}" fill="#fff"/>${cut}</mask>`,
+       `<rect width="${W}" height="${H}" fill="url(#sky)"/><circle cx="${cx}" cy="${hz}" r="${R}" fill="url(#sun)" mask="url(#m)"/>
+        <rect y="${hz}" width="${W}" height="${H-hz}" fill="#1a0b33"/><g stroke="#ff3d9a" stroke-width="${2*S()}" opacity=".9">${g}</g>
+        <line x1="0" y1="${hz}" x2="${W}" y2="${hz}" stroke="#29e0ff" stroke-width="${3*S()}"/>`)}},
+
+  /* ---------- Bold ---------- */
+  {name:"Racing Check", cat:"Bold", note:"Black and school-bus yellow checks. Loud in the best way.",
+   colors:[["#141414","Black"],["#f2c230","Bus yellow"]],
+   svg(){const t=100*S();return svg(`<pattern id="ck" width="${t}" height="${t}" patternUnits="userSpaceOnUse"><rect width="${t}" height="${t}" fill="#f2c230"/><rect width="${t/2}" height="${t/2}" fill="#141414"/><rect x="${t/2}" y="${t/2}" width="${t/2}" height="${t/2}" fill="#141414"/></pattern>`,`<rect width="${W}" height="${H}" fill="url(#ck)"/>`)}},
+  {name:"Zigzag", cat:"Bold", note:"Teal and coral chevrons with a cream line between every row.",
+   colors:[["#167d7f","Teal"],["#f2715a","Coral"],["#fbf1df","Cream"]],
+   svg(){const u=80*S(),rh=60*S();let s="",i=0;for(let y=-rh;y<H+rh*1.4;y+=rh){const col=i++%2?"#f2715a":"#167d7f";let d=`M${-u} ${y}`;for(let x=-u;x<=W+u;x+=u)d+=` L${x+u/2} ${y+rh*.66} L${x+u} ${y}`;s+=`<path d="${d} V${y+rh} H${-u} Z" fill="${col}" stroke="#fbf1df" stroke-width="${6*S()}"/>`}
+     return svg("",`${full("#fbf1df")}${s}`)}},
+  {name:"Pop Dots", cat:"Bold", note:"Big hot-pink polka dots on electric blue.",
+   colors:[["#2546d6","Electric blue"],["#ff5fa8","Hot pink"]],
+   svg(){const t=120*S();return svg(`<pattern id="pd" width="${t}" height="${t}" patternUnits="userSpaceOnUse"><circle cx="${t/4}" cy="${t/4}" r="${t*.18}" fill="#ff5fa8"/><circle cx="${t*.75}" cy="${t*.75}" r="${t*.18}" fill="#ff5fa8"/></pattern>`,`${full("#2546d6")}<rect width="${W}" height="${H}" fill="url(#pd)"/>`)}},
+  {name:"Confetti", cat:"Bold", note:"Party confetti scattered across warm white.",
+   colors:[["#fff8ec","Paper"],["#ef476f","Pink"],["#ffd166","Yellow"],["#06d6a0","Mint"],["#118ab2","Blue"]],
+   svg(){const r=rng(7),cols=["#ef476f","#ffd166","#06d6a0","#118ab2","#1d1d2c"],k0=S();let s="";
+     for(let i=0;i<170*area();i++){const x=r()*W,y=r()*H,c=cols[i%5],a=r()*360,k=r();
+       if(k<.4)s+=`<rect x="${x}" y="${y}" width="${(10+r()*16)*k0}" height="${(5+r()*6)*k0}" fill="${c}" transform="rotate(${a} ${x} ${y})"/>`;
+       else if(k<.7)s+=`<circle cx="${x}" cy="${y}" r="${(3+r()*7)*k0}" fill="${c}"/>`;
+       else s+=`<path d="M${x} ${y} q${8*k0} ${-10*k0} ${16*k0} 0 t${16*k0} 0" stroke="${c}" stroke-width="${4*k0}" fill="none" stroke-linecap="round" transform="rotate(${a} ${x} ${y})"/>`}
+     return svg("",`${full("#fff8ec")}${s}`)}},
+  {name:"Bauhaus", cat:"Bold", note:"Primary-color circles, half moons and blocks on a strict grid.",
+   colors:[["#efe7d6","Linen"],["#d93a2b","Red"],["#2a5caa","Blue"],["#f2b632","Yellow"],["#1c1c1c","Black"]],
+   svg(){const r=rng(12),c=["#d93a2b","#2a5caa","#f2b632","#1c1c1c","#efe7d6"],n=Math.max(3,Math.round(W/200)),u=W/n,rows=Math.ceil(H/u);let s="";
+     for(let j=0;j<rows;j++)for(let i=0;i<n;i++){const x=i*u,y=j*u,a=c[Math.floor(r()*5)],b=c[Math.floor(r()*4)],t=Math.floor(r()*4),rot=Math.floor(r()*4)*90;
+       s+=`<rect x="${x}" y="${y}" width="${u}" height="${u}" fill="${a}"/>`;
+       const g=`transform="rotate(${rot} ${x+u/2} ${y+u/2})"`;
+       if(t===0)s+=`<circle cx="${x+u/2}" cy="${y+u/2}" r="${u*.36}" fill="${b===a?"#efe7d6":b}"/>`;
+       else if(t===1)s+=`<path d="M${x} ${y+u} A${u} ${u} 0 0 1 ${x+u} ${y}" fill="none" stroke="${b===a?"#efe7d6":b}" stroke-width="${u*.18}" ${g}/>`;
+       else if(t===2)s+=`<path d="M${x} ${y+u/2} A${u/2} ${u/2} 0 0 1 ${x+u} ${y+u/2} Z" fill="${b===a?"#efe7d6":b}" ${g}/>`;
+       else s+=`<polygon points="${x},${y+u} ${x+u},${y+u} ${x},${y}" fill="${b===a?"#efe7d6":b}" ${g}/>`}
+     return svg(grain(.1),`${s}${grainRect()}`)}},
+  {name:"Memphis Squiggle", cat:"Bold", note:"Eighties squiggles, triangles and sprinkles on bubblegum pink.",
+   colors:[["#ffd6e0","Bubblegum"],["#1d1d2c","Ink"],["#3ec1d3","Aqua"],["#ffcf3f","Lemon"]],
+   svg(){const r=rng(31),k=S();let s="";
+     for(let i=0;i<60*area();i++){const x=r()*W,y=r()*H,a=r()*360,t=r(),c=["#1d1d2c","#3ec1d3","#ffcf3f","#ff6b6b"][i%4];
+       if(t<.35){let d=`M${x} ${y}`;for(let j=0;j<4;j++)d+=` q${12*k} ${-14*k} ${24*k} 0 t${24*k} 0`;s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${6*k}" stroke-linecap="round" transform="rotate(${a} ${x} ${y})"/>`}
+       else if(t<.6)s+=`<polygon points="${x},${y} ${x+34*k},${y+8*k} ${x+10*k},${y+34*k}" fill="${c}" transform="rotate(${a} ${x} ${y})"/>`;
+       else if(t<.8)s+=`<circle cx="${x}" cy="${y}" r="${14*k}" fill="none" stroke="${c}" stroke-width="${5*k}"/>`;
+       else s+=`<rect x="${x}" y="${y}" width="${18*k}" height="${5*k}" rx="${2.5*k}" fill="${c}" transform="rotate(${a} ${x} ${y})"/>`}
+     return svg("",`${full("#ffd6e0")}${s}`)}},
+
+  /* ---------- Gradient ---------- */
+  {name:"Aurora", cat:"Gradient", note:"Soft green and violet light melting across a deep night sky.",
+   colors:[["#0b1430","Night"],["#38e8b0","Aurora green"],["#7b5cff","Violet"],["#1f8fff","Blue"]],
+   svg(){const [d,b]=blobs(4,["#38e8b0","#7b5cff","#1f8fff","#38e8b0"],5,.09).split("|");return svg(d+grain(.1),`${full("#0b1430")}${b}${grainRect()}`)}},
+  {name:"Peach Haze", cat:"Gradient", note:"A grainy peach, coral and lilac blur. Calm and warm.",
+   colors:[["#ffd9c0","Peach"],["#ff8a7a","Coral"],["#c7a6ff","Lilac"],["#fff1e6","Cream"]],
+   svg(){const [d,b]=blobs(9,["#ff8a7a","#c7a6ff","#ffb38a","#ffd9c0"],5,.1).split("|");return svg(d+grain(.16),`${full("#fff1e6")}${b}${grainRect()}`)}},
+  {name:"Lagoon", cat:"Gradient", note:"Tropical teal and lime pooling into deep blue.",
+   colors:[["#06315a","Deep"],["#00b3a4","Teal"],["#b6f05a","Lime"],["#1a73e8","Blue"]],
+   svg(){const [d,b]=blobs(17,["#00b3a4","#b6f05a","#1a73e8","#00b3a4"],5,.1).split("|");return svg(d+grain(.12),`${full("#06315a")}${b}${grainRect()}`)}},
+
+  /* ---------- Nature ---------- */
+  {name:"River Bank", cat:"Nature", note:"Layered bands of sky, water and reeds.",
+   colors:[["#cfe8ef","Sky"],["#7fc1c9","Shallows"],["#3c8d95","River"],["#7aa05a","Grass"],["#3f6b3a","Reeds"]],
+   svg(){return svg(grain(.08),`${full("#cfe8ef")}${wave(.56,.018,1.9,0,"#7fc1c9")}${wave(.64,.022,2.2,1.5,"#5aa9b2")}${wave(.72,.02,2.6,3,"#3c8d95")}${wave(.82,.026,1.6,2,"#7aa05a")}${wave(.9,.02,2.3,.5,"#3f6b3a")}${grainRect()}`)}},
+  {name:"Lily Pond", cat:"Nature", note:"Deep green water with lily pads, ripples and pink blossoms.",
+   colors:[["#24543f","Pond"],["#4f9a5e","Lily pad"],["#8cc46b","New leaf"],["#f2a7c3","Blossom"]],
+   svg(){const r=rng(21),k=S();let s="";
+     for(let i=0;i<9*area();i++){const x=r()*W,y=r()*H;for(let j=1;j<4;j++)s+=`<circle cx="${x}" cy="${y}" r="${(j*28+r()*10)*k}" fill="none" stroke="#3c7a5c" stroke-width="${2*k}" opacity="${.6-j*.15}"/>`}
+     for(let i=0;i<22*area();i++){const x=r()*W,y=r()*H,rad=(28+r()*46)*k,a=r()*360,c=r()<.65?"#4f9a5e":"#8cc46b";
+       s+=`<g transform="rotate(${a} ${x} ${y})"><path d="M${x} ${y} L${x+rad} ${y-rad*.18} A${rad} ${rad} 0 1 1 ${x+rad} ${y+rad*.18} Z" fill="${c}"/></g>`;
+       if(r()<.22)s+=`<g transform="translate(${x+rad*.2} ${y-rad*.2}) scale(${k})">${[0,72,144,216,288].map(d=>`<ellipse rx="7" ry="14" cy="-9" fill="#f2a7c3" transform="rotate(${d})"/>`).join("")}<circle r="6" fill="#ffd36e"/></g>`}
+     return svg(grain(.1),`${full("#24543f")}${s}${grainRect()}`)}},
+  {name:"Golden Hour", cat:"Nature", note:"A warm evening sky over rolling hills as the sun drops.",
+   colors:[["#f6b26b","Apricot"],["#e86f5b","Coral sky"],["#7d4a7a","Dusk"],["#3b2a4a","Hill"]],
+   svg(){const R=Math.min(W,H)*.19;return svg(`<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d4a7a"/><stop offset=".45" stop-color="#e86f5b"/><stop offset=".8" stop-color="#f6b26b"/></linearGradient>`+grain(.1),
+     `<rect width="${W}" height="${H}" fill="url(#sk)"/><circle cx="${W*.65}" cy="${H*.76}" r="${R*1.25}" fill="#ffd89a" opacity=".25"/><circle cx="${W*.65}" cy="${H*.76}" r="${R}" fill="#ffd89a"/>
+      ${wave(.8,.04,1.1,1,"#9c5a6e")}${wave(.86,.034,1.5,3,"#6b3d5f")}${wave(.93,.024,1.3,.4,"#3b2a4a")}${grainRect()}`)}},
+  {name:"Hot Spring", cat:"Nature", note:"Steamy turquoise water and smooth stones, like a capybara onsen.",
+   colors:[["#5cc6c0","Spring water"],["#2e8f95","Deep pool"],["#f4fbfa","Steam"],["#6f6a64","Stone"]],
+   svg(){const r=rng(5),k=S();let st="",bub="",rocks="";
+     for(let i=0;i<14*area();i++)st+=`<ellipse cx="${r()*W}" cy="${r()*H*.85}" rx="${(120+r()*140)*k}" ry="${(30+r()*40)*k}" fill="#f4fbfa" opacity="${.25+r()*.25}"/>`;
+     for(let i=0;i<40*area();i++)bub+=`<circle cx="${r()*W}" cy="${r()*H}" r="${(3+r()*9)*k}" fill="none" stroke="#e8fbf8" stroke-width="${2*k}" opacity=".55"/>`;
+     for(let x=-30*k;x<W+60*k;x+=95*k)rocks+=`<ellipse cx="${x}" cy="${H-10*k+r()*20*k}" rx="${(70+r()*30)*k}" ry="${(40+r()*25)*k}" fill="${r()<.5?"#6f6a64":"#857f77"}"/>`;
+     return svg(`<radialGradient id="pool" cx=".5" cy=".55" r=".7"><stop offset="0" stop-color="#5cc6c0"/><stop offset="1" stop-color="#2e8f95"/></radialGradient><filter id="bl"><feGaussianBlur stdDeviation="${22*k}"/></filter>`,
+       `<rect width="${W}" height="${H}" fill="url(#pool)"/>${bub}<g filter="url(#bl)">${st}</g>${rocks}`)}},
+  {name:"Topo Map", cat:"Nature", note:"Contour lines from a hiking map, in sage and moss.",
+   colors:[["#e7ecdf","Paper"],["#7c9a6d","Sage"],["#3f5a3a","Moss"]],
+   svg(){const r=rng(44),k=S();let s="";const peaks=Array.from({length:Math.max(3,Math.round(4*area()))},()=>[r()*W,r()*H,r()*6]);
+     peaks.forEach(([cx,cy,ph])=>{for(let j=1;j<16;j++){const R=j*26*k;let d="";for(let t=0;t<=64;t++){const a=t/64*Math.PI*2,rr=R*(1+.12*Math.sin(a*3+ph+j*.3)+.06*Math.sin(a*5-ph));d+=(t?"L":"M")+(cx+rr*Math.cos(a)).toFixed(1)+" "+(cy+rr*Math.sin(a)*.85).toFixed(1)}
+       s+=`<path d="${d}Z" fill="none" stroke="${j%5===0?"#3f5a3a":"#7c9a6d"}" stroke-width="${(j%5===0?2.4:1.2)*k}"/>`}});
+     return svg(grain(.08),`${full("#e7ecdf")}${s}${grainRect()}`)}},
+
+  /* ---------- Nerdy ---------- */
+  {name:"Graph Paper", cat:"Nerdy", note:"Engineering paper with fine blue squares and a red margin.",
+   colors:[["#f7f9f6","Sheet"],["#b9d3e6","Fine rule"],["#6f9fc6","Major rule"],["#d9534f","Margin"]],
+   svg(){const a=20*S(),b=a*5;return svg(`<pattern id="gs" width="${a}" height="${a}" patternUnits="userSpaceOnUse"><path d="M${a} 0H0V${a}" fill="none" stroke="#b9d3e6" stroke-width="${S()}"/></pattern><pattern id="gl" width="${b}" height="${b}" patternUnits="userSpaceOnUse"><path d="M${b} 0H0V${b}" fill="none" stroke="#6f9fc6" stroke-width="${2*S()}"/></pattern>`,
+     `${full("#f7f9f6")}<rect width="${W}" height="${H}" fill="url(#gs)"/><rect width="${W}" height="${H}" fill="url(#gl)"/><line x1="${70*S()}" y1="0" x2="${70*S()}" y2="${H}" stroke="#d9534f" stroke-width="${3*S()}"/>`)}},
+  {name:"Blueprint", cat:"Nerdy", note:"Cyanotype blue with a white drafting grid and a dashed circle.",
+   colors:[["#1c4f8a","Cyanotype"],["#e8f1fb","Line white"]],
+   svg(){const a=25*S(),b=a*4;return svg(`<pattern id="bs" width="${a}" height="${a}" patternUnits="userSpaceOnUse"><path d="M${a} 0H0V${a}" fill="none" stroke="#e8f1fb" stroke-width="${.6*S()}" opacity=".22"/></pattern><pattern id="bl2" width="${b}" height="${b}" patternUnits="userSpaceOnUse"><path d="M${b} 0H0V${b}" fill="none" stroke="#e8f1fb" stroke-width="${1.4*S()}" opacity=".35"/></pattern>`+vignette(.4)+grain(.08),
+     `${full("#1c4f8a")}<rect width="${W}" height="${H}" fill="url(#bs)"/><rect width="${W}" height="${H}" fill="url(#bl2)"/>
+      <circle cx="${W/2}" cy="${H/2}" r="${Math.min(W,H)*.36}" fill="none" stroke="#e8f1fb" stroke-width="${1.5*S()}" stroke-dasharray="${10*S()} ${8*S()}" opacity=".4"/>
+      <line x1="${W/2}" y1="${H/2-Math.min(W,H)*.42}" x2="${W/2}" y2="${H/2+Math.min(W,H)*.42}" stroke="#e8f1fb" stroke-width="${S()}" opacity=".3"/><line x1="${W/2-Math.min(W,H)*.42}" y1="${H/2}" x2="${W/2+Math.min(W,H)*.42}" y2="${H/2}" stroke="#e8f1fb" stroke-width="${S()}" opacity=".3"/>
+      <rect width="${W}" height="${H}" fill="url(#vg)"/>${grainRect()}`)}},
+  {name:"Chalkboard", cat:"Nerdy", note:"A dusty lecture-hall chalkboard with a wooden frame.",
+   colors:[["#2e4a3f","Slate green"],["#e9ecdf","Chalk"],["#8a5a2e","Oak"]],
+   svg(){const f=26*S();return svg(`<filter id="smudge" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${(.012/S()).toFixed(4)}" numOctaves="3" seed="4"/><feColorMatrix type="matrix" values="0 0 0 0 .91  0 0 0 0 .93  0 0 0 0 .87  0 0 0 .22 -.04"/></filter>`+grain(.12),
+     `${full("#2e4a3f")}<rect width="${W}" height="${H}" filter="url(#smudge)"/>${grainRect()}
+      <rect x="${f/2}" y="${f/2}" width="${W-f}" height="${H-f}" fill="none" stroke="#8a5a2e" stroke-width="${f}"/>`)}},
+  {name:"Night Sky", cat:"Nerdy", note:"Deep navy full of stars and a crescent moon. Good for late nights.",
+   colors:[["#0f1838","Midnight"],["#26346b","Deep blue"],["#fff3c4","Starlight"]],
+   svg(){const r=rng(99),k=S();let s="";for(let i=0;i<260*area();i++){const x=r()*W,y=r()*H,q=r(),z=9*k,zz=2.5*k;s+=q<.94?`<circle cx="${x}" cy="${y}" r="${((.6+r()*1.8)*k).toFixed(2)}" fill="#fff3c4" opacity="${(.4+r()*.6).toFixed(2)}"/>`:`<path d="M${x} ${y-z} L${x+zz} ${y-zz} L${x+z} ${y} L${x+zz} ${y+zz} L${x} ${y+z} L${x-zz} ${y+zz} L${x-z} ${y} L${x-zz} ${y-zz} Z" fill="#fff3c4"/>`}
+     const m=60*k;return svg(`<linearGradient id="ns" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1838"/><stop offset="1" stop-color="#26346b"/></linearGradient>`,
+       `<rect width="${W}" height="${H}" fill="url(#ns)"/>${s}<circle cx="${W*.8}" cy="${H*.15}" r="${m}" fill="#fff3c4"/><circle cx="${W*.8+m*.42}" cy="${H*.15-m*.25}" r="${m*.93}" fill="#141f45"/>`)}},
+];
+
+function render(b, w, h){ W=w; H=h; const s=b.svg(); W=800; H=1000; return s; }
+const uri = s => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+BGS.forEach(b => b.thumb = uri(render(b, 800, 1000)));
+
+const grid=document.getElementById("grid"), chips=document.getElementById("chips");
+const cats=["All",...new Set(BGS.map(b=>b.cat))]; let filter="All";
+cats.forEach(c=>{const el=document.createElement("button");el.className="chip";el.type="button";el.textContent=c;el.setAttribute("aria-pressed",c===filter);
+  el.onclick=()=>{filter=c;[...chips.children].forEach(x=>x.setAttribute("aria-pressed",x===el));draw()};chips.appendChild(el)});
+function visible(){return BGS.filter(b=>filter==="All"||b.cat===filter)}
+function draw(){
+  grid.innerHTML=""; const list=visible();
+  document.getElementById("count").textContent=`${list.length} backgrounds`;
+  list.forEach(b=>{const card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label",`${b.name}, ${b.cat}`);
+    card.innerHTML=`<div class="thumb"><img src="${b.thumb}" alt="" loading="lazy"></div><div class="meta"><span class="name">${b.name}</span><span class="cat">${b.cat}</span></div><div class="dots">${b.colors.map(c=>`<i style="background:${c[0]}"></i>`).join("")}</div>`;
+    card.onclick=()=>open(BGS.indexOf(b));grid.appendChild(card)});
+}
+
+let cur=0, size=SIZES[0], last=null; const viewer=document.getElementById("viewer"), st=document.getElementById("vStatus");
+try{const s=localStorage.getItem("bb-size");const f=SIZES.find(x=>x.id===s);if(f)size=f}catch(e){}
+const sizesEl=document.getElementById("vSizes");
+SIZES.forEach(z=>{const el=document.createElement("button");el.type="button";el.className="size";el.dataset.id=z.id;
+  el.innerHTML=`<b>${z.name}</b><small>${z.w} × ${z.h}</small>`;el.onclick=()=>{size=z;try{localStorage.setItem("bb-size",z.id)}catch(e){};preview()};sizesEl.appendChild(el)});
+function preview(){
+  const b=BGS[cur];[...sizesEl.children].forEach(el=>el.setAttribute("aria-pressed",el.dataset.id===size.id));
+  const pw=size.w>=size.h?900:Math.round(900*size.w/size.h), ph=Math.round(pw*size.h/size.w);
+  const sc=Math.min(size.w,size.h)/Math.min(pw,ph); // keep pattern scale matching the real export
+  document.getElementById("vImg").src=uri(render(b,size.w,size.h));
+  document.getElementById("vImg").alt=`${b.name} at ${size.name} size`;
+}
+function open(i){
+  cur=(i+BGS.length)%BGS.length;const b=BGS[cur];
+  document.getElementById("vName").textContent=b.name;document.getElementById("vCat").textContent=b.cat;document.getElementById("vNote").textContent=b.note;
+  st.textContent="";const sw=document.getElementById("vSw");sw.innerHTML="";
+  b.colors.forEach(([hex,label])=>{const el=document.createElement("button");el.type="button";el.className="sw";el.innerHTML=`<i style="background:${hex}"></i><small>${label}</small><b>${hex.toUpperCase()}</b>`;
+    el.onclick=async()=>{try{await navigator.clipboard.writeText(hex.toUpperCase());st.textContent=`Copied ${hex.toUpperCase()}.`}catch(e){st.textContent=`${label}: ${hex.toUpperCase()}`}};sw.appendChild(el)});
+  preview();
+  if(viewer.hidden){last=document.activeElement;viewer.hidden=false;document.body.style.overflow="hidden";document.getElementById("vClose").focus()}
+}
+function close(){viewer.hidden=true;document.body.style.overflow="";if(last)last.focus()}
+document.getElementById("vClose").onclick=close;
+document.getElementById("vPrev").onclick=()=>open(cur-1);
+document.getElementById("vNext").onclick=()=>open(cur+1);
+document.getElementById("shuffle").onclick=()=>{const l=visible();open(BGS.indexOf(l[Math.floor(Math.random()*l.length)]))};
+viewer.addEventListener("click",e=>{if(e.target===viewer)close()});
+document.addEventListener("keydown",e=>{if(viewer.hidden)return;if(e.key==="Escape")close();if(e.key==="ArrowRight")open(cur+1);if(e.key==="ArrowLeft")open(cur-1)});
+
+document.getElementById("vDl").onclick=()=>{
+  const b=BGS[cur],z=size;st.textContent=`Rendering ${z.w} × ${z.h}…`;
+  const img=new Image();
+  img.onload=()=>{try{const c=document.createElement("canvas");c.width=z.w;c.height=z.h;c.getContext("2d").drawImage(img,0,0,z.w,z.h);
+    c.toBlob(bl=>{if(!bl){st.textContent="Your browser couldn't make the PNG. Try another browser.";return}
+      const a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download=`${b.name.toLowerCase().replace(/\s+/g,"-")}-${z.w}x${z.h}.png`;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);st.textContent=`Downloaded ${b.name} at ${z.w} × ${z.h}.`},"image/png")}
+    catch(e){st.textContent="Your browser blocked the download. Try another browser."}};
+  img.onerror=()=>{st.textContent="That image failed to render. Try another size."};
+  img.src=uri(render(b,z.w,z.h));
+};
+draw();
+</script>
+</body>
+</html>
